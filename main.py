@@ -3,11 +3,20 @@ class Polynom:
 		if num < 0 :
 			raise ValueError("Got negative number in Polynom initialization")
 		self._num = num
-		self._bin  = bin(num)[2:]
+		self._bin  = [ int(i) for i in list( bin(num)[2:] ) ]
+		# Не может быть отрицательной, т.к. числа больше или равны 0
+		self._power = len( self._bin ) - 1
 
 	@property
 	def num(self):
 		return self._num
+
+	@property
+	def power(self):
+		return self._power
+
+	def bin(self, index):
+		return self._bin[index]
 
 	def __add__(self, polynom):
 		return Polynom( self._num ^ polynom.num )
@@ -17,15 +26,14 @@ class Polynom:
 
 	def __repr__(self):
 		output = ""
-		max_power = len(self._bin)
-		for digit, power  in zip( self._bin, range(max_power-1, 0, -1) ):
-			if digit == '1':
+		for digit, power  in zip( self._bin, range(self._power, 0, -1) ):
+			if digit == 1:
 				if power != 1:
 					output += "x^{}+".format(power)
 				else:
 					output += "x+"
 
-		output += "" if self._bin.endswith('0') else "1+"
+		output += "" if self._bin[-1] == 0 else "1+"
 		
 		if output == "":
 			return "0"
@@ -33,10 +41,5 @@ class Polynom:
 			return output[:-1]
 
 
-print(Polynom(5)+Polynom(2))
+print(Polynom(5)+Polynom(1))
 
-# with open("primpoly.txt") as file:
-# 	content = file.read()
-# 	separated = content.split(", ")
-# 	nums = tuple(( int(num) for num in separated ))
-# 	print( nums[0] )
