@@ -1,4 +1,5 @@
 import pprint
+import numpy as np
 
 class Polynom:
 	def __init__(self, num):
@@ -58,7 +59,6 @@ def gen_pow_matrix(primpoly):
 	def pow_in_field(polx, ppoly):
 		# Т.к. многочлены примитивные, то примитивный элемент - это x
 		polx = polx * Polynom(2)
-		print(polx)
 
 		if polx.power == ppoly.power:
 			polx = polx + Polynom(1 << polx.power)
@@ -68,17 +68,104 @@ def gen_pow_matrix(primpoly):
 
 	ppoly = Polynom( primpoly )
 	m = 2**(ppoly.power)-1
-	table = [ [None, None] for _ in range(m) ]
+	table = np.zeros( (m, 2), dtype="int64" )
 
 	px = Polynom(1)
 	for i in range(m):
 		px = pow_in_field(px, ppoly)
-		table[i][1] = px
-		table[i][0] = px.num
+		table[i][1] = px.num
+	
+	for i in range(m):	
+		index = None
+		for j in range(m):
+			if table[j][1] == i+1:
+				index = j+1
+				break
+		table[i][0] = index
+
 
 	return table
 
+def add(X, Y):
+	z = np.zeros( X.shape, dtype="int64" )
+	for i in range(len(X)):
+		for j in range(len(Y)):
+			z[i][j] = (Polynom(X[i][j]) + Polynom(Y[i][j])).num
+
+	return z
+
+def sum(X, axis=0):
+	m, n = X.shape
+
+	result = None
+	if axis == 0:
+		result = np.zeros(n, dtype="int64")
+
+		for j in range(n):
+			poly = Polynom(0)
+			for i in range(m):
+				poly = poly + Polynom(X[i][j])
+			result[j] = poly.num
+	else:
+		result = np.zeros(m, dtype="int64")
+
+		for i in range(m):
+			poly = Polynom(0)
+			for j in range(n):
+				poly = poly + Polynom(X[i][j])
+			result[i] = poly.num
+
+	return result
+
+
+def mulf(table, poly1num, poly2num):
+	m, _ = table.shape
+	power1, power2 = None, None
+	for key, row in enumerate(table):
+		if row[1] == poly1num:
+			power1  = key + 1
+		if row[1] == poly2num:
+			power2  = key + 1
+
+	mul_key = (power1 + power2) % m
+
+	return table[mul_key - 1][1] 
+
+def divf(table, poly1num, poly2num):
+	m, _ = table.shape
+	power = None
+	for key, row in enumerate(table):
+		if row[1] == poly2num:
+			power = key + 1
+			break
+
+	div_key = (-power) % m
+
+	return mulf(table, poly1num, table[div_key - 1][1])
+
+
+def prod(X, Y, pm):
+	m, n = X.shape
+	z = np.zeros( X.shape, dtype="int64" )
+	for i in range(m):
+		for j in range(n):
+			z[i][j] = mulf(pm, X[i][j], Y[i][j])
+
+def divide(X, Y, pm):
+	m, n = X.shape
+	z = np.zeros( X.shape, dtype="int64" )
+	for i in range(m):
+		for j in range(n):
+			z[i][j] = divf(pm, X[i][j], Y[i][j])
+
+
+table = gen_pow_matrix(11)
+print( divf(table, 3, 5) )
 
 # print( Polynom(21) * Polynom(12) )
 # print( Polynom(21) )
 # print( Polynom(12) )
+
+#pprint.pprint( add( np.array([ [1, 2], [3, 4] ]), np.array([ [4, 3], [2, 1] ]) ) )
+#pprint.pprint( sum(np.array([[1, 2], [3, 4]]), 1) )
+
