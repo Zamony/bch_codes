@@ -53,6 +53,54 @@ class Polynom:
 			return output[:-1]
 
 
+class PolynomF(Polynom):
+	def __init__(self, num, primpoly, table):
+		super().__init__(num)
+		self._primpoly = primpoly
+		self._table = table
+
+	@property
+	def primpoly(self):
+		return self._primpoly
+
+	@property
+	def table(self):
+		return self._table
+
+	def __mul__(self, polyf):
+		table = self.table
+		poly1num = self.num
+		poly2num = polyf.num
+
+		m, _ = table.shape
+		power1, power2 = None, None
+		for key, row in enumerate(table):
+			if row[1] == poly1num:
+				power1  = key + 1
+			if row[1] == poly2num:
+				power2  = key + 1
+
+		mul_key = (power1 + power2) % m
+
+		return table[mul_key - 1][1]
+
+	def __truediv__(self, polyf):
+		table = self.table
+		poly2num = polyf.num
+
+		m, _ = table.shape
+		power = None
+		for key, row in enumerate(table):
+			if row[1] == poly2num:
+				power = key + 1
+				break
+
+		div_key = (-power) % m
+		mul_poly = PolynomF(table[div_key - 1][1], self.primpoly, self.table)
+
+		return self.__mul__(mul_poly)
+
+
 
 def gen_pow_matrix(primpoly):
 
@@ -159,8 +207,9 @@ def divide(X, Y, pm):
 			z[i][j] = divf(pm, X[i][j], Y[i][j])
 
 
-table = gen_pow_matrix(11)
-print( divf(table, 3, 5) )
+primpoly = 11
+table = gen_pow_matrix(primpoly)
+print( PolynomF(4, primpoly, table) / PolynomF(7, primpoly, table) )
 
 # print( Polynom(21) * Polynom(12) )
 # print( Polynom(21) )
