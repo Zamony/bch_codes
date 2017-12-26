@@ -59,6 +59,19 @@ class PolynomF(Polynom):
 	def __init__(self, num, table):
 		super().__init__(num)
 		self._table = table
+		self._primpoly = None
+
+	@property
+	def primpoly(self):
+		if self._primpoly is None:
+			power = 1
+			for row in table:
+				if row[1] != 2**power:
+					self._primpoly = 2**power + row[1]
+					break
+				power += 1
+
+		return self._primpoly
 
 	@property
 	def table(self):
@@ -95,6 +108,15 @@ class PolynomF(Polynom):
 		mul_poly = PolynomF(table[mul_key - 1][1], self.table)
 
 		return mul_poly
+
+	def __pow__(self, power):
+		if power < 1: raise NotImplementedError("Polynomial negative power isn't implemented")
+		
+		one_poly = PolynomF(self.num, self.table)
+		poly = one_poly
+		for i in range(power-1):
+			poly = poly * one_poly
+		return poly
 
 	def __truediv__(self, polyf):
 		table = self.table
@@ -234,11 +256,49 @@ def linsolve(A, b, pm):
 		result = [ poly.num for poly in ans ]
 		return result
 
+def minpoly(x, pm):
+	def minpoly_b(b, pm):
+		orig_b = b
+		x = PolynomF(2, pm) # x
+		power = 1
+		minimal = x - b
+		roots = [b.num]
+		while True:
+			curr_b = b**(2**power)
+			#print("{} степень {}".format(curr_b, 2**power))
+			if curr_b.num == orig_b.num:
+				minimal = Polynom(minimal.num)
+				break
 
-table = gen_pow_matrix(11)
-A = np.array([ [4, 6, 4], [6, 1, 7], [1, 6, 3] ], dtype="int64")
-b = np.array( [5, 3, 1], dtype="int64" )
-print( linsolve(A, b, table) )
+			if curr_b.num == x.num:
+				minimal = Polynom(orig_b.primpoly)
+				roots = [2**(2**i) for i in range(minimal.power)]
+				break
+
+			minimal = minimal * (x - curr_b)
+			roots.append(curr_b.num)
+			power += 1
+
+		return minimal, roots
+
+	roots = []
+	minimal = Polynom(1)
+	for b in x:
+		minimal_pol, roots_pol = minpoly_b(PolynomF(b, pm), pm)
+		minimal = minimal * minimal_pol
+		roots = roots + roots_pol
+
+	roots = sorted(list(set(roots)))
+	return [minimal.bin(i) for i in range(minimal.power)][::-1], roots
+
+
+table = gen_pow_matrix(19)
+print( minpoly( (6, 3), table ) )
+
+# A = np.array([ [4, 6, 4], [6, 1, 7], [1, 6, 3] ], dtype="int64")
+# b = np.array( [5, 3, 1], dtype="int64" )
+# print( linsolve(A, b, table) )
+
 #print( PolynomF(2, table) / PolynomF(5, table) )
 
 # print( Polynom(21) * Polynom(12) )
