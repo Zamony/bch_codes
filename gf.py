@@ -54,14 +54,9 @@ class Polynom:
 
 
 class PolynomF(Polynom):
-	def __init__(self, num, primpoly, table):
+	def __init__(self, num, table):
 		super().__init__(num)
-		self._primpoly = primpoly
 		self._table = table
-
-	@property
-	def primpoly(self):
-		return self._primpoly
 
 	@property
 	def table(self):
@@ -96,7 +91,7 @@ class PolynomF(Polynom):
 				break
 
 		div_key = (-power) % m
-		mul_poly = PolynomF(table[div_key - 1][1], self.primpoly, self.table)
+		mul_poly = PolynomF(table[div_key - 1][1], self.table)
 
 		return self.__mul__(mul_poly)
 
@@ -165,51 +160,23 @@ def sum(X, axis=0):
 
 	return result
 
-
-def mulf(table, poly1num, poly2num):
-	m, _ = table.shape
-	power1, power2 = None, None
-	for key, row in enumerate(table):
-		if row[1] == poly1num:
-			power1  = key + 1
-		if row[1] == poly2num:
-			power2  = key + 1
-
-	mul_key = (power1 + power2) % m
-
-	return table[mul_key - 1][1] 
-
-def divf(table, poly1num, poly2num):
-	m, _ = table.shape
-	power = None
-	for key, row in enumerate(table):
-		if row[1] == poly2num:
-			power = key + 1
-			break
-
-	div_key = (-power) % m
-
-	return mulf(table, poly1num, table[div_key - 1][1])
-
-
 def prod(X, Y, pm):
 	m, n = X.shape
 	z = np.zeros( X.shape, dtype="int64" )
 	for i in range(m):
 		for j in range(n):
-			z[i][j] = mulf(pm, X[i][j], Y[i][j])
+			z[i][j] = PolynomF(X[i][j], pm) * PolynomF(Y[i][j], pm)
 
 def divide(X, Y, pm):
 	m, n = X.shape
 	z = np.zeros( X.shape, dtype="int64" )
 	for i in range(m):
 		for j in range(n):
-			z[i][j] = divf(pm, X[i][j], Y[i][j])
+			z[i][j] = PolynomF(X[i][j], pm) / PolynomF(Y[i][j], pm)
 
 
-primpoly = 11
-table = gen_pow_matrix(primpoly)
-print( PolynomF(4, primpoly, table) / PolynomF(7, primpoly, table) )
+table = gen_pow_matrix(11)
+print( PolynomF(2, table) / PolynomF(5, table) )
 
 # print( Polynom(21) * Polynom(12) )
 # print( Polynom(21) )
