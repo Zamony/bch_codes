@@ -35,6 +35,8 @@ class Polynom:
 
 		return result
 
+	def __neg__(self):
+		return Polynom(self.num)
 
 	def __repr__(self):
 		output = ""
@@ -62,10 +64,24 @@ class PolynomF(Polynom):
 	def table(self):
 		return self._table
 
+	def __add__(self, polynom):
+		poly = super().__add__(polynom)
+		return PolynomF(poly.num, self.table)
+
+	def __sub__(self, polynom):
+		return self.__add__(polynom)
+
+	def __neg__(self):
+		poly = super().__neg__()
+		return PolynomF(poly.num, self.table)
+
 	def __mul__(self, polyf):
 		table = self.table
 		poly1num = self.num
 		poly2num = polyf.num
+
+		if poly1num == 0 or poly2num == 0:
+			return PolynomF(0, self.table)
 
 		m, _ = table.shape
 		power1, power2 = None, None
@@ -76,12 +92,19 @@ class PolynomF(Polynom):
 				power2  = key + 1
 
 		mul_key = (power1 + power2) % m
+		mul_poly = PolynomF(table[mul_key - 1][1], self.table)
 
-		return table[mul_key - 1][1]
+		return mul_poly
 
 	def __truediv__(self, polyf):
 		table = self.table
 		poly2num = polyf.num
+
+		if poly2num == 0:
+			raise ZeroDivisionError("Division by zero in polynomial division")
+
+		if self.num == 0:
+			return PolynomF(0, self.table)
 
 		m, _ = table.shape
 		power = None
@@ -174,9 +197,49 @@ def divide(X, Y, pm):
 		for j in range(n):
 			z[i][j] = PolynomF(X[i][j], pm) / PolynomF(Y[i][j], pm)
 
+def linsolve(A, b, pm):
+	def pfsum(pair):
+		s = PolynomF(0, pm)
+		for i in pair:
+			s += i
+		return s
+
+	b = b.reshape( (len(b), 1) )
+	matrix = np.append(A, b, axis=1)
+	m = matrix.tolist()
+
+	for i in range(len(m)):
+		for j in range(len(m[0])):
+			m[i][j] = PolynomF(m[i][j], pm)
+
+	try:
+		for col in range(len(m[0])):
+			for row in range(col+1, len(m)):
+				r = [(rowValue * (-(m[row][col] / m[col][col]))) for rowValue in m[col]]
+				m[row] = [pfsum(pair) for pair in zip(m[row], r)]
+		ans = []
+		m.reverse()
+		for sol in range(len(m)):
+				if sol == 0:
+					ans.append(m[sol][-1] / m[sol][-2])
+				else:
+					inner = PolynomF(0, pm)
+					for x in range(sol):
+						inner = inner + (ans[x]*m[sol][-2-x])
+					ans.append((m[sol][-1]-inner)/m[sol][-sol-2])
+	except ZeroDivisionError:
+		return np.nan
+	else:
+		ans.reverse()
+		result = [ poly.num for poly in ans ]
+		return result
+
 
 table = gen_pow_matrix(11)
-print( PolynomF(2, table) / PolynomF(5, table) )
+A = np.array([ [4, 6, 4], [6, 1, 7], [1, 6, 3] ], dtype="int64")
+b = np.array( [5, 3, 1], dtype="int64" )
+print( linsolve(A, b, table) )
+#print( PolynomF(2, table) / PolynomF(5, table) )
 
 # print( Polynom(21) * Polynom(12) )
 # print( Polynom(21) )
