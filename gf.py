@@ -289,11 +289,27 @@ def minpoly(x, pm):
 		roots = roots + roots_pol
 
 	roots = sorted(list(set(roots)))
-	return [minimal.bin(i) for i in range(minimal.power)][::-1], roots
+	return [minimal.bin(i) for i in range(minimal.power+1)][::-1], roots
 
 
-table = gen_pow_matrix(19)
-print( minpoly( (6, 3), table ) )
+def polyval(p, x, pm):
+	result = []
+	for val in x:
+		single_result = PolynomF(0, pm)
+		poly = PolynomF(val, pm)
+		for coeff, power in zip(p, range(len(p))[::-1]):
+			if coeff == 1:
+				if power == 0:
+					single_result = single_result + PolynomF(1, pm)
+				else:
+					single_result = single_result +  poly**power
+
+		result.append(single_result)
+
+	return result
+
+table = gen_pow_matrix(11)
+print( polyval(np.array([1, 1, 0]), np.array([3, 4]), table) )
 
 # A = np.array([ [4, 6, 4], [6, 1, 7], [1, 6, 3] ], dtype="int64")
 # b = np.array( [5, 3, 1], dtype="int64" )
