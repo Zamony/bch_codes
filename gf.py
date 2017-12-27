@@ -18,6 +18,10 @@ class Polynom:
     def power(self):
         return self._power
 
+    @property
+    def binary(self):
+        return self._bin.copy()
+
     def bin(self, index):
         return self._bin[self._power - index]
 
@@ -34,6 +38,30 @@ class Polynom:
                 result = result + Polynom(self._num << i)
 
         return result
+
+    def __truediv__(self, polyf):
+
+        def to_num(binary):
+            num = 0
+            for i, coeff in enumerate(reversed(binary)):
+                num += coeff * (2**i)
+            return num
+
+        p1 = np.array(self.binary, dtype="int64")
+        p2 = np.array(polyf.binary, dtype="int64")
+        
+        q_deg = p1.size - p2.size
+        if q_deg < 0:
+            return Polynom(0), Polynom(to_num(p1))
+
+        q = np.zeros(q_deg + 1, dtype=bool)
+        while p1.size >= p2.size:
+            cur_q_pow = q_deg - (p1.size - p2.size)
+            q[cur_q_pow] = 1
+            sub_poly = np.asarray((Polynom(to_num(q[cur_q_pow:])) * Polynom(to_num(p2))).binary)
+            p1 = np.asarray((Polynom(to_num(p1)) + Polynom(to_num(sub_poly))).binary)
+        r = p1
+        return Polynom(to_num(q)), Polynom(to_num(r))
 
     def __neg__(self):
         return Polynom(self.num)
@@ -65,7 +93,7 @@ class PolynomF(Polynom):
     def primpoly(self):
         if self._primpoly is None:
             power = 1
-            for row in table:
+            for row in self.table:
                 if row[1] != 2**power:
                     self._primpoly = 2**power + row[1]
                     break
@@ -433,14 +461,17 @@ def euclid(p1, p2, pm, max_deg=0):
 
     return (r_prev, x_prev, y_prev)
 
-table = gen_pow_matrix(11)
-print( 
-    euclid(
-        np.array([7, 3, 5], dtype="int64"),
-        np.array([2, 0, 4], dtype="int64"),
-        table
-    )
-)
+
+# table = gen_pow_matrix(11)
+# print( 
+#     euclid(
+#         np.array([7, 3, 5], dtype="int64"),
+#         np.array([2, 0, 4], dtype="int64"),
+#         table
+#     )
+# )
+
+print( Polynom(3) / Polynom(4) )
 
 #print( minpoly(np.array([6, 4]), table) )
 
