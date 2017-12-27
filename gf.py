@@ -208,16 +208,20 @@ def sum(X, axis=0):
 def prod(X, Y, pm):
 	m, n = X.shape
 	z = np.zeros( X.shape, dtype="int64" )
+	z = z.tolist()
 	for i in range(m):
 		for j in range(n):
-			z[i][j] = PolynomF(X[i][j], pm) * PolynomF(Y[i][j], pm)
+			z[i][j] = (PolynomF(X[i][j], pm) * PolynomF(Y[i][j], pm)).num
+	return np.array(z, dtype="int64")
 
 def divide(X, Y, pm):
 	m, n = X.shape
 	z = np.zeros( X.shape, dtype="int64" )
+	z = z.tolist()
 	for i in range(m):
 		for j in range(n):
-			z[i][j] = PolynomF(X[i][j], pm) / PolynomF(Y[i][j], pm)
+			z[i][j] = (PolynomF(X[i][j], pm) / PolynomF(Y[i][j], pm)).num
+	return np.array(z, dtype="int64")
 
 def linsolve(A, b, pm):
 	def pfsum(pair):
@@ -254,7 +258,7 @@ def linsolve(A, b, pm):
 	else:
 		ans.reverse()
 		result = [ poly.num for poly in ans ]
-		return result
+		return np.array(result, dtype="int64")
 
 def minpoly(x, pm):
 	def minpoly_b(b, pm):
@@ -288,8 +292,9 @@ def minpoly(x, pm):
 		minimal = minimal * minimal_pol
 		roots = roots + roots_pol
 
-	roots = sorted(list(set(roots)))
-	return [minimal.bin(i) for i in range(minimal.power+1)][::-1], roots
+	roots = np.array(sorted(list(set(roots))), dtype="int64")
+	minimal = np.array([minimal.bin(i) for i in range(minimal.power+1)][::-1], dtype="int64")
+	return minimal, roots
 
 
 def polyval(p, x, pm):
@@ -298,18 +303,21 @@ def polyval(p, x, pm):
 		single_result = PolynomF(0, pm)
 		poly = PolynomF(val, pm)
 		for coeff, power in zip(p, range(len(p))[::-1]):
-			if coeff == 1:
+			if coeff != 0:
 				if power == 0:
-					single_result = single_result + PolynomF(1, pm)
+					single_result = single_result + PolynomF(coeff, pm)
 				else:
-					single_result = single_result +  poly**power
+					single_result = single_result + PolynomF(coeff, pm) * (poly**power)
 
-		result.append(single_result)
+		result.append(single_result.num)
 
-	return result
+	return np.array(result, dtype="int64")
 
-table = gen_pow_matrix(11)
-print( polyval(np.array([1, 1, 0]), np.array([3, 4]), table) )
+table = gen_pow_matrix(19)
+print(table)
+print( minpoly(np.array([6, 4]), table) )
+
+# print( polyval( np.array([2, 5, 6], dtype="int64"), np.array([3, 4], dtype="int64"), table ) )
 
 # A = np.array([ [4, 6, 4], [6, 1, 7], [1, 6, 3] ], dtype="int64")
 # b = np.array( [5, 3, 1], dtype="int64" )
