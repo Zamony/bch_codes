@@ -18,7 +18,7 @@ class BCH:
             raise ValueError("log2(n + 1) not in [2, 16]")
 
         primpoly = None
-        with open("primpoly2.txt") as file:
+        with open("primpoly.txt") as file:
             content = file.read()
             separated = content.split(", ")
             for num in separated:
@@ -111,11 +111,11 @@ class BCH:
             else:
                 V[msg_idx, :] = np.nan
 
-        return V.astype(int)
+        return V
 
-bch = BCH(7, 1)
-msg = np.array([[0,0,1,1]], dtype="int64")
+bch = BCH(15, 3)
+msg = np.array([[0, 0, 1, 0, 1]], dtype="int64")
 print( bch.encode(msg) )
-print( bch.decode(np.array([[0, 1, 1, 1, 1, 0, 1]], dtype="int64"), method='pgz') )
-print( bch.dist() )
+print( bch.decode(np.array([[1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0]], dtype="int64"), method='euclid') )
+#print( bch.dist() )
 
