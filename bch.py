@@ -27,9 +27,27 @@ class BCH:
                     primpoly = num
                     break
 
+        self.n = n
         self.pm = gf.gen_pow_matrix(primpoly)
         self.R = self.pm[:(2 * t), 1]
         self.g = gf.minpoly(self.R, self.pm)[0]
+
+    def dist(self):
+        k = self.n - self.g.size + 1
+        U = np.eye(k)
+        V = self.encode(U)
+
+        min_dist = self.n + 1
+        for num in range(1, 2**k):
+            binary = [int(i) for i in list(bin(num)[2:])]
+            binary = [0] * ( k - len(binary) ) + binary
+            binary = np.array(binary, dtype="int64").reshape(k, 1)
+
+            dist = np.sum(np.sum(V * binary, axis=0) % 2)
+            if dist < min_dist:
+                min_dist = dist
+
+        return min_dist
 
     def encode(self, U):
         k = U.shape[1]
@@ -91,5 +109,6 @@ class BCH:
             else:
                 V[msg_idx, :] = np.nan
 
+        return V
 
 bch = BCH(3, 1)
