@@ -18,7 +18,7 @@ class BCH:
             raise ValueError("log2(n + 1) not in [2, 16]")
 
         primpoly = None
-        with open("primpoly.txt") as file:
+        with open("primpoly2.txt") as file:
             content = file.read()
             separated = content.split(", ")
             for num in separated:
@@ -31,10 +31,11 @@ class BCH:
         self.pm = gf.gen_pow_matrix(primpoly)
         self.R = self.pm[:(2 * t), 1]
         self.g = gf.minpoly(self.R, self.pm)[0]
+        #print((self.g, self.R, self.pm ))
 
     def dist(self):
         k = self.n - self.g.size + 1
-        U = np.eye(k)
+        U = np.eye(k, dtype="int64")
         V = self.encode(U)
 
         min_dist = self.n + 1
@@ -58,9 +59,10 @@ class BCH:
         x_m = gf.Polynom( 2**m )
         for i in range(n_msgs):
             s = x_m * gf.Polynom( gf.l2_to_num(U[i, :]) )
-            r = (s / self.g)[1]
+            r = ( s / gf.Polynom( gf.l2_to_num(self.g)) )[1]
             v = s + r
-            V[i, -v.size:] = v.binary.copy()
+            v = np.array(v.binary, dtype="int64")
+            V[i, -v.size:] = v.copy()
 
         return V
 
@@ -109,6 +111,11 @@ class BCH:
             else:
                 V[msg_idx, :] = np.nan
 
-        return V
+        return V.astype(int)
 
-bch = BCH(3, 1)
+bch = BCH(7, 1)
+msg = np.array([[0,0,1,1]], dtype="int64")
+print( bch.encode(msg) )
+print( bch.decode(np.array([[0, 1, 1, 1, 1, 0, 1]], dtype="int64"), method='pgz') )
+print( bch.dist() )
+

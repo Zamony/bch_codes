@@ -339,35 +339,35 @@ def minpoly(x, pm):
         orig_b = b
         x = PolynomF(2, pm) # x
         power = 1
-        minimal = x - b
         roots = [b.num]
+        primpoly_power = Polynom(b.primpoly).power
+
         while True:
             curr_b = b**(2**power)
-            #print("{} степень {}".format(curr_b, 2**power))
-            if curr_b.num == orig_b.num:
-                minimal = Polynom(minimal.num)
-                break
-
             if curr_b.num == x.num:
-                minimal = Polynom(orig_b.primpoly)
-                roots = [2**(2**i) for i in range(minimal.power)]
+                roots = [(x**(2**i)).num for i in range(primpoly_power)]
                 break
 
-            minimal = minimal * (x - curr_b)
+            if curr_b.num == orig_b.num:
+                break
+
             roots.append(curr_b.num)
             power += 1
 
-        return minimal, roots
+        return roots
 
     roots = []
-    minimal = Polynom(1)
+    minimal = np.array([1], dtype="int64")
     for b in x:
-        minimal_pol, roots_pol = minpoly_b(PolynomF(b, pm), pm)
-        minimal = minimal * minimal_pol
+        roots_pol = minpoly_b(PolynomF(b, pm), pm)
         roots = roots + roots_pol
 
-    roots = np.array(sorted(list(set(roots))), dtype="int64")
-    minimal = np.array([minimal.bin(i) for i in range(minimal.power+1)][::-1], dtype="int64")
+    roots = sorted(list(set(roots)))
+    for root in roots:
+        minimal = polyprod(minimal,  np.array([1, root]), pm ) 
+
+    roots = np.array(roots, dtype="int64")
+
     return minimal, roots
 
 
@@ -460,6 +460,9 @@ def euclid(p1, p2, pm, max_deg=0):
 
 
 # table = gen_pow_matrix(11)
+# print(table)
+# print( minpoly(np.array([2, 4]), table) )
+
 # print( 
 #     euclid(
 #         np.array([7, 3, 5], dtype="int64"),
