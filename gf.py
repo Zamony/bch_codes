@@ -7,7 +7,6 @@ class Polynom:
             raise ValueError("Got negative number in Polynom initialization")
         self._num = num
         self._bin  = [ int(i) for i in list( bin(num)[2:] ) ]
-        # Не может быть отрицательной, т.к. числа больше или равны 0
         self._power = len( self._bin ) - 1
 
     @property
@@ -40,28 +39,21 @@ class Polynom:
         return result
 
     def __truediv__(self, polyf):
-
-        def to_num(binary):
-            num = 0
-            for i, coeff in enumerate(reversed(binary)):
-                num += coeff * (2**i)
-            return num
-
         p1 = np.array(self.binary, dtype="int64")
         p2 = np.array(polyf.binary, dtype="int64")
         
         q_deg = p1.size - p2.size
         if q_deg < 0:
-            return Polynom(0), Polynom(to_num(p1))
+            return Polynom(0), Polynom(l2_to_num(p1))
 
         q = np.zeros(q_deg + 1, dtype=bool)
         while p1.size >= p2.size:
             cur_q_pow = q_deg - (p1.size - p2.size)
             q[cur_q_pow] = 1
-            sub_poly = np.asarray((Polynom(to_num(q[cur_q_pow:])) * Polynom(to_num(p2))).binary)
-            p1 = np.asarray((Polynom(to_num(p1)) + Polynom(to_num(sub_poly))).binary)
+            sub_poly = np.asarray((Polynom(l2_to_num(q[cur_q_pow:])) * Polynom(l2_to_num(p2))).binary)
+            p1 = np.asarray((Polynom(l2_to_num(p1)) + Polynom(l2_to_num(sub_poly))).binary)
         r = p1
-        return Polynom(to_num(q)), Polynom(to_num(r))
+        return Polynom(l2_to_num(q)), Polynom(l2_to_num(r))
 
     def __neg__(self):
         return Polynom(self.num)
@@ -169,6 +161,11 @@ class PolynomF(Polynom):
         return self.__mul__(mul_poly)
 
 
+def l2_to_num(binary):
+    num = 0
+    for i, coeff in enumerate(reversed(binary)):
+        num += coeff * (2**i)
+    return num
 
 def gen_pow_matrix(primpoly):
 
@@ -471,7 +468,7 @@ def euclid(p1, p2, pm, max_deg=0):
 #     )
 # )
 
-print( Polynom(3) / Polynom(4) )
+#print( Polynom(3) / Polynom(4) )
 
 #print( minpoly(np.array([6, 4]), table) )
 
