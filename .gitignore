@@ -3,4 +3,5 @@
 !.gitignore
 !gf.py
 !bch.py
+!stats.py
 !primpoly.txt

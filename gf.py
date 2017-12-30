@@ -457,36 +457,3 @@ def euclid(p1, p2, pm, max_deg=0):
             break
 
     return (r_prev, x_prev, y_prev)
-
-
-# table = gen_pow_matrix(11)
-# print(table)
-# print( minpoly(np.array([2, 4]), table) )
-
-# print( 
-#     euclid(
-#         np.array([7, 3, 5], dtype="int64"),
-#         np.array([2, 0, 4], dtype="int64"),
-#         table
-#     )
-# )
-
-#print( Polynom(3) / Polynom(4) )
-
-#print( minpoly(np.array([6, 4]), table) )
-
-# print( polyval( np.array([2, 5, 6], dtype="int64"), np.array([3, 4], dtype="int64"), table ) )
-
-# A = np.array([ [4, 6, 4], [6, 1, 7], [1, 6, 3] ], dtype="int64")
-# b = np.array( [5, 3, 1], dtype="int64" )
-# print( linsolve(A, b, table) )
-
-#print( PolynomF(2, table) / PolynomF(5, table) )
-
-# print( Polynom(21) * Polynom(12) )
-# print( Polynom(21) )
-# print( Polynom(12) )
-
-#pprint.pprint( add( np.array([ [1, 2], [3, 4] ]), np.array([ [4, 3], [2, 1] ]) ) )
-#pprint.pprint( sum(np.array([[1, 2], [3, 4]]), 1) )
-

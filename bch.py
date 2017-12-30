@@ -112,10 +112,3 @@ class BCH:
                 V[msg_idx, :] = np.nan
 
         return V
-
-bch = BCH(15, 3)
-msg = np.array([[0, 0, 1, 0, 1]], dtype="int64")
-print( bch.encode(msg) )
-print( bch.decode(np.array([[1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0]], dtype="int64"), method='euclid') )
-#print( bch.dist() )
-
